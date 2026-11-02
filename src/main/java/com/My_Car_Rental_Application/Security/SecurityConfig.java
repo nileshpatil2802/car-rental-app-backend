@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -28,6 +27,8 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    	
+    	
 
         return http
                 .csrf(csrf -> csrf.disable())
@@ -47,7 +48,8 @@ public class SecurityConfig {
                             "/car-images/**",
                             "/home/forgot-password",
                             "/home/reset-password",
-                            "/home/validate-reset-token"
+                            "/home/validate-reset-token",
+                            "/user/TripDetailsForHistory/**"
                             
                     ).permitAll();
                     

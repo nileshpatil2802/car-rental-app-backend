@@ -2770,10 +2770,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -2873,205 +2876,297 @@ public class WhatsAppWebhookService {
     // CREATE WHATSAPP BOOKING
     // =========================================================
 
+//    @Transactional
+//    public Map<String, Object> createWhatsAppBooking(
+//            WhatsAppBookingRequest request) {
+//
+//        if (request == null) {
+//            throw new RuntimeException(
+//                    "Booking request cannot be null");
+//        }
+//
+//        // -----------------------------------------------------
+//        // Find User
+//        // -----------------------------------------------------
+//
+//        UserRequest user = homeRepository
+//                .findById(request.getUserId())
+//                .orElseThrow(() ->
+//                        new RuntimeException(
+//                                "User not found: "
+//                                        + request.getUserId()));
+//
+//
+//        // -----------------------------------------------------
+//        // Find Car
+//        // -----------------------------------------------------
+//
+//        AdminCarsData car = carsDataRepository
+//                .findById(request.getCarId())
+//                .orElseThrow(() ->
+//                        new RuntimeException(
+//                                "Car not found: "
+//                                        + request.getCarId()));
+//
+//
+//        // -----------------------------------------------------
+//        // Validate Dates
+//        // -----------------------------------------------------
+//
+//        if (request.getPickupDate() == null
+//                || request.getDropoffDate() == null) {
+//
+//            throw new RuntimeException(
+//                    "Pickup date and dropoff date are required");
+//        }
+//
+//        if (request.getDropoffDate()
+//                .isBefore(request.getPickupDate())) {
+//
+//            throw new RuntimeException(
+//                    "Dropoff date cannot be before pickup date");
+//        }
+//
+//
+//        // -----------------------------------------------------
+//        // Validate Admin Number
+//        // -----------------------------------------------------
+//
+//        if (!isNotBlank(adminWhatsAppNumber)) {
+//
+//            throw new RuntimeException(
+//                    "Admin WhatsApp number is not configured. "
+//                            + "Add whatsapp.admin.number "
+//                            + "in application.properties");
+//        }
+//
+//
+//        // -----------------------------------------------------
+//        // Create Booking
+//        // -----------------------------------------------------
+//
+//        Booking booking = new Booking();
+//
+//        booking.setUser(user);
+//
+//        booking.setAdminCarsData(car);
+//
+//        booking.setPickupDate(
+//                request.getPickupDate());
+//
+//        booking.setDropoffDate(
+//                request.getDropoffDate());
+//
+//        booking.setPickupLocation(
+//                request.getPickupLocation());
+//
+//        booking.setDropoffLocation(
+//                request.getDropoffLocation());
+//
+//        booking.setTripDriverType(
+//                request.getTripDriverType());
+//
+//        booking.setDays(
+//                request.getDays());
+//
+//        booking.setPrice(
+//                request.getPrice());
+//
+//        booking.setTotal(
+//                request.getTotal());
+//
+//        booking.setBookingStatus(
+//                "WHATSAPP_PENDING");
+//
+//        booking.setBookingSource(
+//                "WHATSAPP");
+//
+//        booking.setWhatsappStatus(
+//                "PENDING");
+//
+//
+//        // -----------------------------------------------------
+//        // Save Booking
+//        // -----------------------------------------------------
+//
+//        Booking savedBooking =
+//                bookingRepository.save(booking);
+//
+//
+//        // -----------------------------------------------------
+//        // Create Admin Message
+//        // -----------------------------------------------------
+//
+//        String message =
+//                createAdminBookingMessage(
+//                        savedBooking);
+//
+//
+//        // -----------------------------------------------------
+//        // Send WhatsApp Message
+//        // -----------------------------------------------------
+//
+//        boolean sent =
+//                sendMessage(
+//                        adminWhatsAppNumber,
+//                        message);
+//
+//
+//        // -----------------------------------------------------
+//        // Update WhatsApp Status
+//        // -----------------------------------------------------
+//
+//        if (sent) {
+//
+//            savedBooking.setWhatsappStatus(
+//                    "SENT");
+//
+//            bookingRepository.save(
+//                    savedBooking);
+//
+//        } else {
+//
+//            savedBooking.setWhatsappStatus(
+//                    "FAILED");
+//
+//            bookingRepository.save(
+//                    savedBooking);
+//
+//            throw new RuntimeException(
+//                    "Booking created successfully, "
+//                            + "but WhatsApp message could not be sent");
+//        }
+//
+//
+//        // -----------------------------------------------------
+//        // Response
+//        // -----------------------------------------------------
+//
+//        Map<String, Object> response =
+//                new HashMap<>();
+//
+//        response.put(
+//                "success",
+//                true);
+//
+//        response.put(
+//                "bookingId",
+//                savedBooking.getId());
+//
+//        response.put(
+//                "status",
+//                savedBooking.getBookingStatus());
+//
+//        response.put(
+//                "whatsappStatus",
+//                savedBooking.getWhatsappStatus());
+//
+//        response.put(
+//                "message",
+//                "Booking request sent to admin on WhatsApp");
+//
+//        return response;
+//    }
+//
     @Transactional
-    public Map<String, Object> createWhatsAppBooking(
-            WhatsAppBookingRequest request) {
+    public Map<String, Object> createWhatsAppBooking(WhatsAppBookingRequest request) {
 
         if (request == null) {
-            throw new RuntimeException(
-                    "Booking request cannot be null");
+            throw new RuntimeException("Booking request cannot be null");
         }
 
-        // -----------------------------------------------------
-        // Find User
-        // -----------------------------------------------------
-
+        // 1. Validate User
         UserRequest user = homeRepository
                 .findById(request.getUserId())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "User not found: "
-                                        + request.getUserId()));
+                .orElseThrow(() -> new RuntimeException("User not found: " + request.getUserId()));
 
-
-        // -----------------------------------------------------
-        // Find Car
-        // -----------------------------------------------------
-
+        // 2. Validate Car
         AdminCarsData car = carsDataRepository
                 .findById(request.getCarId())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Car not found: "
-                                        + request.getCarId()));
+                .orElseThrow(() -> new RuntimeException("Car not found: " + request.getCarId()));
 
-
-        // -----------------------------------------------------
-        // Validate Dates
-        // -----------------------------------------------------
-
-        if (request.getPickupDate() == null
-                || request.getDropoffDate() == null) {
-
-            throw new RuntimeException(
-                    "Pickup date and dropoff date are required");
+        // 3. Validate Dates
+        if (request.getPickupDate() == null || request.getDropoffDate() == null) {
+            throw new RuntimeException("Pickup date and dropoff date are required");
         }
 
-        if (request.getDropoffDate()
-                .isBefore(request.getPickupDate())) {
-
-            throw new RuntimeException(
-                    "Dropoff date cannot be before pickup date");
+        if (request.getDropoffDate().isBefore(request.getPickupDate())) {
+            throw new RuntimeException("Dropoff date cannot be before pickup date");
         }
 
-
-        // -----------------------------------------------------
-        // Validate Admin Number
-        // -----------------------------------------------------
-
-        if (!isNotBlank(adminWhatsAppNumber)) {
-
-            throw new RuntimeException(
-                    "Admin WhatsApp number is not configured. "
-                            + "Add whatsapp.admin.number "
-                            + "in application.properties");
-        }
-
-
-        // -----------------------------------------------------
-        // Create Booking
-        // -----------------------------------------------------
-
+        // 4. Create Booking Entry
         Booking booking = new Booking();
-
         booking.setUser(user);
-
         booking.setAdminCarsData(car);
+        booking.setPickupDate(request.getPickupDate());
+        booking.setDropoffDate(request.getDropoffDate());
+        booking.setPickupLocation(request.getPickupLocation());
+        booking.setDropoffLocation(request.getDropoffLocation());
+        booking.setTripDriverType(request.getTripDriverType());
+        booking.setDays(request.getDays());
+        booking.setPrice(request.getPrice());
+        booking.setTotal(request.getTotal());
 
-        booking.setPickupDate(
-                request.getPickupDate());
+        // Set default initial statuses
+        booking.setBookingStatus("PENDING");
+        booking.setBookingSource("WHATSAPP");
+        booking.setWhatsappStatus("PENDING");
 
-        booking.setDropoffDate(
-                request.getDropoffDate());
+        Booking savedBooking = bookingRepository.save(booking);
 
-        booking.setPickupLocation(
-                request.getPickupLocation());
-
-        booking.setDropoffLocation(
-                request.getDropoffLocation());
-
-        booking.setTripDriverType(
-                request.getTripDriverType());
-
-        booking.setDays(
-                request.getDays());
-
-        booking.setPrice(
-                request.getPrice());
-
-        booking.setTotal(
-                request.getTotal());
-
-        booking.setBookingStatus(
-                "WHATSAPP_PENDING");
-
-        booking.setBookingSource(
-                "WHATSAPP");
-
-        booking.setWhatsappStatus(
-                "PENDING");
-
-
-        // -----------------------------------------------------
-        // Save Booking
-        // -----------------------------------------------------
-
-        Booking savedBooking =
-                bookingRepository.save(booking);
-
-
-        // -----------------------------------------------------
-        // Create Admin Message
-        // -----------------------------------------------------
-
-        String message =
-                createAdminBookingMessage(
-                        savedBooking);
-
-
-        // -----------------------------------------------------
-        // Send WhatsApp Message
-        // -----------------------------------------------------
-
-        boolean sent =
-                sendMessage(
-                        adminWhatsAppNumber,
-                        message);
-
-
-        // -----------------------------------------------------
-        // Update WhatsApp Status
-        // -----------------------------------------------------
-
-        if (sent) {
-
-            savedBooking.setWhatsappStatus(
-                    "SENT");
-
-            bookingRepository.save(
-                    savedBooking);
-
-        } else {
-
-            savedBooking.setWhatsappStatus(
-                    "FAILED");
-
-            bookingRepository.save(
-                    savedBooking);
-
-            throw new RuntimeException(
-                    "Booking created successfully, "
-                            + "but WhatsApp message could not be sent");
-        }
-
-
-        // -----------------------------------------------------
-        // Response
-        // -----------------------------------------------------
-
-        Map<String, Object> response =
-                new HashMap<>();
-
-        response.put(
-                "success",
-                true);
-
-        response.put(
-                "bookingId",
-                savedBooking.getId());
-
-        response.put(
-                "status",
-                savedBooking.getBookingStatus());
-
-        response.put(
-                "whatsappStatus",
-                savedBooking.getWhatsappStatus());
-
-        response.put(
-                "message",
-                "Booking request sent to admin on WhatsApp");
+        // 5. Return HTTP 200 OK Response Payload
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("bookingId", savedBooking.getId());
+        response.put("status", savedBooking.getBookingStatus());
+        response.put("whatsappStatus", savedBooking.getWhatsappStatus());
+        response.put("booking", savedBooking);
+        response.put("message", "Booking saved successfully");
 
         return response;
     }
-
-
     // =========================================================
     // CREATE ADMIN BOOKING MESSAGE
     // =========================================================
+    
+ // =====================================================
+ // ADMIN STATUS UPDATE & USER WHATSAPP NOTIFICATION
+ // =====================================================
 
-    private String createAdminBookingMessage(
-            Booking booking) {
+ @PostMapping("/admin/update-status")
+ public ResponseEntity<?> updateBookingStatus(
+         @RequestParam Long bookingId,
+         @RequestParam String newStatus,
+         @RequestParam String customerPhone) {
+
+     try {
+         // 1. Build status notification message for user
+         String message = String.format(
+             "Hello! Your booking status for Booking ID #%d has been updated to: *%s*.",
+             bookingId, newStatus
+         );
+
+         // 2. Format customer phone (Ensure no leading + or spaces)
+         String cleanPhone = customerPhone.replaceAll("[^0-9]", "");
+
+         // 3. Create WhatsApp link for admin to click & send to user
+         String whatsappUrl = "https://wa.me/" + cleanPhone + "?text=" + 
+                              java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
+
+         return ResponseEntity.ok(Map.of(
+             "success", true,
+             "message", "Status updated successfully",
+             "whatsappUrl", whatsappUrl
+         ));
+
+     } catch (Exception e) {
+         return ResponseEntity
+                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                 .body(Map.of("success", false, "message", e.getMessage()));
+     }
+ }
+
+    private String createAdminBookingMessage(Booking booking) {
 
         UserRequest user =
                 booking.getUser();

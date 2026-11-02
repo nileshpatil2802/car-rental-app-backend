@@ -983,6 +983,42 @@ public class UserServiceImpl implements UserService{
 
 	    userDocumentRepository.save(documents);
 	}
+
+	@Override
+	public BookingDto getTripDetailByCarIdAndUserIdService(int car_id, int user_id) {
+		
+		Booking bookedTripDetails = bookingRepository.findTripDetailsByCarIdAndUserId(car_id,user_id);
+		
+		return TripDetailsDto(bookedTripDetails.getAdminCarsData().getId(),bookedTripDetails.getUser().getId() ,bookedTripDetails.getDays(),bookedTripDetails.getPickupDate()
+				, bookedTripDetails.getDropoffDate(),bookedTripDetails.getBookingStatus(),
+				bookedTripDetails.getPickupLocation(),bookedTripDetails.getDropoffLocation()
+				,bookedTripDetails.getTripDriverType(),bookedTripDetails.getTotal(),bookedTripDetails.getPrice());
+	}
+
+	private BookingDto TripDetailsDto(int car_id,int user_id, int days, LocalDate pickupDate, LocalDate dropoffDate,
+			String bookingStatus, String pickupLocation, String dropoffLocation, String tripDriverType, Double total,
+			Double price) {
+		
+		BookingDto bookingDto = new BookingDto();
+		
+		bookingDto.setCarId(car_id);
+		bookingDto.setUserId(user_id);
+		bookingDto.setDays(days);
+		bookingDto.setPickupDate(pickupDate);
+		bookingDto.setDropoffDate(dropoffDate);
+		bookingDto.setBookingStatus(bookingStatus);
+		bookingDto.setPickupLocation(pickupLocation);
+		bookingDto.setDropoffLocation(dropoffLocation);
+		bookingDto.setTripDriverType(tripDriverType);
+		bookingDto.setTotal(total);
+		bookingDto.setPrice(price);
+		
+		return bookingDto;
+	}
+
+	
+
+	
  
 
 	

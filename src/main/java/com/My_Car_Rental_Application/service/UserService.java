@@ -62,5 +62,7 @@ public interface UserService {
 
 	void deleteUserDocument(int userId, String documentType);
 
+	BookingDto getTripDetailByCarIdAndUserIdService(int car_id, int user_id);
+
 
 }
