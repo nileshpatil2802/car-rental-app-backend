@@ -60,7 +60,8 @@ public class SecurityConfig {
 
                     auth.anyRequest().authenticated();
                 })
-                .httpBasic(Customizer.withDefaults())
+//                .httpBasic(Customizer.withDefaults())
+                .httpBasic(httpBasic -> httpBasic.disable())
                 .build();
     }
 
