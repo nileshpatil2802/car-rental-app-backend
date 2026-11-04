@@ -42,6 +42,7 @@ public class SecurityConfig {
                     // Public APIs
 //                    auth.requestMatchers("/home/**").permitAll();
                 	auth.requestMatchers(
+                			"/",
                             "/home/login",
                             "/home/register",
                             "/home/**",
