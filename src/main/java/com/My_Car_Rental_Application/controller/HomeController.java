@@ -49,10 +49,7 @@ public class HomeController {
 		
 	}
 	
-	@GetMapping("/")
-    public String home() {
-        return "Car Rental Backend API is running successfully!";
-    }
+	
 	
 	@PostMapping("/register")
 	public ResponseEntity<Map<String,String>> UserRegister(@RequestBody UserRequestDto request) {
