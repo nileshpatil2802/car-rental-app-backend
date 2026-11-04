@@ -41,23 +41,34 @@ public class SecurityConfig {
 
                     // Public APIs
 //                    auth.requestMatchers("/home/**").permitAll();
+//                	auth.requestMatchers(
+//                			"/home/",
+//                            "/home/login",
+//                            "/home/register",
+//                            "/home/**",
+//                            "/car-images/**",
+//                            "/home/forgot-password",
+//                            "/home/reset-password",
+//                            "/home/validate-reset-token",
+//                            "/user/TripDetailsForHistory/**"
+//                            
+//                    ).permitAll();
                 	auth.requestMatchers(
-                			"/",
-                            "/home/login",
-                            "/home/register",
+                            "/",
                             "/home/**",
                             "/car-images/**",
-                            "/home/forgot-password",
-                            "/home/reset-password",
-                            "/home/validate-reset-token",
                             "/user/TripDetailsForHistory/**"
-                            
                     ).permitAll();
                     
-                    // Protected APIs
+//                    // Protected APIs
+//                    auth.requestMatchers("/user/**").hasAnyRole("USER", "ADMIN");
+//                    auth.requestMatchers("/auth/admin/**").hasRole("ADMIN");
+//                   
+//
+//                    auth.anyRequest().authenticated();
+                	// Protected APIs
                     auth.requestMatchers("/user/**").hasAnyRole("USER", "ADMIN");
                     auth.requestMatchers("/auth/admin/**").hasRole("ADMIN");
-                   
 
                     auth.anyRequest().authenticated();
                 })
