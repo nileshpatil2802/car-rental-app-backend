@@ -101,6 +101,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
         		List.of(
                         "https://car-rental-app-frontend-1.vercel.app",
+                        "https://car-rental-app-frontend-1-38jskv6d1-nilesh-02b3.vercel.app",
                         "https://*.vercel.app",
                         "http://localhost:3000",
                         "http://localhost:5173"
