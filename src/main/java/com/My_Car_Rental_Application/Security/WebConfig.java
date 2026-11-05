@@ -21,9 +21,15 @@ public class WebConfig
 //                );
 //    }
 	
+//	@Override
+//    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//        registry.addResourceHandler("/car-images/**")
+//                .addResourceLocations("file:uploads/cars/");
+//    }
+	
 	@Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/car-images/**")
-                .addResourceLocations("file:uploads/cars/");
-    }
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+	    registry.addResourceHandler("/car-images/**")
+	            .addResourceLocations("classpath:/uploads/");
+	}
 }
