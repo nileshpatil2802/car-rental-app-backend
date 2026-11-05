@@ -696,8 +696,9 @@ public class UserServiceImpl implements UserService{
 	 */
 	private String saveFile(MultipartFile file) {
 	    try {
-	        String uploadDir =
-	                "D:/Nilesh Patil/car-rental-app-main/car-rental-app-main/upload";
+//	        String uploadDir =
+//	                "D:/Nilesh Patil/car-rental-app-main/car-rental-app-main/upload";
+	    	String uploadDir = "uploads";
 
 	        File folder = new File(uploadDir);
 	        if (!folder.exists()) {
