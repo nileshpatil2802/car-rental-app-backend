@@ -56,7 +56,7 @@ public class SecurityConfig {
                 	auth.requestMatchers(
                             "/",
                             "/home/**",
-                            "/car-images/**",
+//                            "/car-images/**",
                             "/uploads/**",
                             "/user/TripDetailsForHistory/**"
                     ).permitAll();
