@@ -27,9 +27,16 @@ public class WebConfig
 //                .addResourceLocations("file:uploads/cars/");
 //    }
 	
+//	@Override
+//	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//	    registry.addResourceHandler("/car-images/**")
+//	            .addResourceLocations("classpath:/uploads/");
+//	}
+	
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+	    // Points to an 'uploads' folder in the root working directory of the container
 	    registry.addResourceHandler("/car-images/**")
-	            .addResourceLocations("classpath:/uploads/");
+	            .addResourceLocations("file:uploads/");
 	}
 }

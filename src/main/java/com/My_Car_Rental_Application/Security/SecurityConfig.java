@@ -57,6 +57,7 @@ public class SecurityConfig {
                             "/",
                             "/home/**",
                             "/car-images/**",
+                            "/uploads/**",
                             "/user/TripDetailsForHistory/**"
                     ).permitAll();
                     
