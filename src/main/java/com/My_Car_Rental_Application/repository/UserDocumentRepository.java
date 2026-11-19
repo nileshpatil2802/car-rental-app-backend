@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.My_Car_Rental_Application.entity.AdminCarsData;
 import com.My_Car_Rental_Application.entity.UserDocuments;
 import com.My_Car_Rental_Application.entity.UserRequest;
 

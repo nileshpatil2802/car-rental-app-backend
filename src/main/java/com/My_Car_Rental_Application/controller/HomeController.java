@@ -30,6 +30,11 @@ import com.My_Car_Rental_Application.service.HomeService;
 import com.My_Car_Rental_Application.service.PasswordResetService;
 
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 
 @CrossOrigin(origins = "http://localhost:5173")
@@ -171,11 +176,54 @@ public class HomeController {
 //	    return ResponseEntity.status(401).body(Map.of("message", "Invalid Credentials"));
 //	}
 	
+//	@PostMapping("/login")
+//	public ResponseEntity<Map<String, Object>> doLogin(@RequestBody UserLoginDto request) {
+//
+//	    try {
+//	        // 1. First check email + password
+//	        Authentication authentication = authenticationManager.authenticate(
+//	                new UsernamePasswordAuthenticationToken(
+//	                        request.getEmail(),
+//	                        request.getPassword()
+//	                )
+//	        );
+//
+//	        if (authentication.isAuthenticated()) {
+//
+//	            // 2. After correct password, check blocked status
+//	            homeService.checkUserStatus(request);
+//
+//	            // 3. Return user data
+//	            UserResponseDto user = homeService.doLogin(request);
+//	            
+//
+//	            return ResponseEntity.ok(Map.of(
+//	                    "message", "Login Successful",
+//	                    "user", user
+//	            ));
+//	        }
+//
+//	    } catch (BadCredentialsException e) {
+//	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+//	                "message", "Wrong Email or Password"
+//	        ));
+//
+//	    } catch (ResponseStatusException e) {
+//	        return ResponseEntity.status(e.getStatusCode()).body(Map.of(
+//	                "message", e.getReason()
+//	        ));
+//	    }
+//
+//	    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+//	            "message", "Invalid Credentials"
+//	    ));
+//	}
 	@PostMapping("/login")
-	public ResponseEntity<Map<String, Object>> doLogin(@RequestBody UserLoginDto request) {
+	public ResponseEntity<Map<String, Object>> doLogin(
+	        @RequestBody UserLoginDto request,
+	        HttpServletRequest httpRequest) {          // 🔑 add this parameter
 
 	    try {
-	        // 1. First check email + password
 	        Authentication authentication = authenticationManager.authenticate(
 	                new UsernamePasswordAuthenticationToken(
 	                        request.getEmail(),
@@ -185,12 +233,19 @@ public class HomeController {
 
 	        if (authentication.isAuthenticated()) {
 
-	            // 2. After correct password, check blocked status
 	            homeService.checkUserStatus(request);
 
-	            // 3. Return user data
 	            UserResponseDto user = homeService.doLogin(request);
-	            
+
+	            // 🔑🔑🔑 PERSIST THE AUTHENTICATION TO THE SESSION
+	            SecurityContext context = SecurityContextHolder.createEmptyContext();
+	            context.setAuthentication(authentication);
+	            SecurityContextHolder.setContext(context);
+
+	            HttpSession session = httpRequest.getSession(true);
+	            session.setAttribute(
+	                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+	                    context);
 
 	            return ResponseEntity.ok(Map.of(
 	                    "message", "Login Successful",
@@ -200,18 +255,14 @@ public class HomeController {
 
 	    } catch (BadCredentialsException e) {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-	                "message", "Wrong Email or Password"
-	        ));
-
+	                "message", "Wrong Email or Password"));
 	    } catch (ResponseStatusException e) {
 	        return ResponseEntity.status(e.getStatusCode()).body(Map.of(
-	                "message", e.getReason()
-	        ));
+	                "message", e.getReason()));
 	    }
 
 	    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-	            "message", "Invalid Credentials"
-	    ));
+	            "message", "Invalid Credentials"));
 	}
 	
 	@GetMapping("/cars")

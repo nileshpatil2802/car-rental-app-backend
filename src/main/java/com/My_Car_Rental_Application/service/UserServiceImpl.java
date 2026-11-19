@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -694,12 +695,15 @@ public class UserServiceImpl implements UserService{
 	 * Saves the given MultipartFile to the upload directory with a
 	 * timestamp-prefixed unique file name and returns the stored file name.
 	 */
+	@Value("${app.user-documents-dir}")
+	private String uploadDir;
+	
 	private String saveFile(MultipartFile file) {
 	    try {
 //	        String uploadDir =
 //	                "D:/Nilesh Patil/car-rental-app-main/car-rental-app-main/upload";
-	    	String uploadDir = "uploads";
-
+//	    	String uploadDir = System.getProperty("user.dir") + "/uploads";
+	    	
 	        File folder = new File(uploadDir);
 	        if (!folder.exists()) {
 	            folder.mkdirs();
@@ -722,6 +726,163 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	
+//	@Override
+//	public UserDocuments updateDocument(
+//	        int userId,
+//	        String documentType,
+//	        MultipartFile drivingLicense,
+//	        LocalDate licenseExpiry,
+//	        MultipartFile aadhharCard,
+//	        String aadharCardNo,
+//	        String drivingLicenseNo) {
+//
+//	    try {
+//
+//	        // -----------------------------------------
+//	        // 1. Find existing user
+//	        // -----------------------------------------
+//	        UserRequest user = homeRepository.findById(userId)
+//	                .orElseThrow(() ->
+//	                        new RuntimeException("User not found"));
+//
+//
+//	        // -----------------------------------------
+//	        // 2. Find existing document record
+//	        // -----------------------------------------
+//	        UserDocuments document =
+//	                userDocumentRepository.findByUserId(userId)
+//	                        .orElseThrow(() ->
+//	                                new RuntimeException(
+//	                                        "Document record not found for user: "
+//	                                                + userId
+//	                                ));
+//
+//
+//	        // -----------------------------------------
+//	        // 3. Normalize document type
+//	        // -----------------------------------------
+//	        String type = documentType
+//	                .trim()
+//	                .toUpperCase();
+//
+//
+//	        // -----------------------------------------
+//	        // 4. Update selected document
+//	        // -----------------------------------------
+//
+//	        switch (type) {
+//
+//	            // =====================================
+//	            // DRIVING LICENSE
+//	            // =====================================
+//	            case "LICENSE":
+//
+//	                // Update file only if new file provided
+//	                if (drivingLicense != null
+//	                        && !drivingLicense.isEmpty()) {
+//
+//	                    String newLicenseFile =
+//	                            saveFile(drivingLicense);
+//
+//	                    document.setDrivingLicense(
+//	                            newLicenseFile
+//	                    );
+//	                }
+//
+//
+//	                // Update License number
+//	                if (drivingLicenseNo != null
+//	                        && !drivingLicenseNo.trim().isEmpty()) {
+//
+//	                    document.setDrivingLicenseNo(
+//	                            drivingLicenseNo
+//	                    );
+//	                }
+//
+//
+//	                // Update expiry date
+//	                if (licenseExpiry != null) {
+//
+//	                    document.setLicenseExpiry(
+//	                            licenseExpiry
+//	                    );
+//	                }
+//
+//	                break;
+//
+//
+//	            // =====================================
+//	            // AADHAAR
+//	            // =====================================
+//	            case "AADHAAR":
+//
+//	                // Update file only if new file provided
+//	                if (aadhharCard != null
+//	                        && !aadhharCard.isEmpty()) {
+//
+//	                    String newAadhaarFile =
+//	                            saveFile(aadhharCard);
+//
+//	                    document.setAadhharCard(
+//	                            newAadhaarFile
+//	                    );
+//	                }
+//
+//
+//	                // Update Aadhaar number
+//	                if (aadharCardNo != null
+//	                        && !aadharCardNo.trim().isEmpty()) {
+//
+//	                    document.setAadharNo(
+//	                            aadharCardNo
+//	                    );
+//	                }
+//
+//	                break;
+//
+//
+//	            // =====================================
+//	            // INVALID TYPE
+//	            // =====================================
+//	            default:
+//
+//	                throw new IllegalArgumentException(
+//	                        "Invalid document type: "
+//	                                + documentType
+//	                );
+//	        }
+//
+//
+//	        // -----------------------------------------
+//	        // 5. Update status
+//	        // -----------------------------------------
+//	        document.setStatus("Pending");
+//
+//	        document.setReason("");
+//
+//
+//	        // -----------------------------------------
+//	        // 6. Save existing row
+//	        // -----------------------------------------
+//	        userDocumentRepository.save(document);
+//
+//
+//	        // -----------------------------------------
+//	        // 7. Return updated record
+//	        // -----------------------------------------
+//	        return userDocumentRepository.findByUser_Id(userId);
+//
+//
+//	    } catch (Exception e) {
+//
+//	        e.printStackTrace();
+//
+//	        throw new RuntimeException(
+//	                "Document update failed : "
+//	                        + e.getMessage()
+//	        );
+//	    }
+//	}
 	@Override
 	public UserDocuments updateDocument(
 	        int userId,
@@ -733,150 +894,62 @@ public class UserServiceImpl implements UserService{
 	        String drivingLicenseNo) {
 
 	    try {
-
-	        // -----------------------------------------
 	        // 1. Find existing user
-	        // -----------------------------------------
 	        UserRequest user = homeRepository.findById(userId)
-	                .orElseThrow(() ->
-	                        new RuntimeException("User not found"));
+	                .orElseThrow(() -> new RuntimeException("User not found"));
 
+	        // 2. Find existing document record OR create a new one if not found
+	        // ⬇️ हा भाग बदलला आहे ⬇️
+	        UserDocuments document = userDocumentRepository.findByUserId(userId)
+	                .orElseGet(() -> {
+	                    UserDocuments newDoc = new UserDocuments();
+	                    newDoc.setUser(user); // नवीन रेकॉर्डसाठी युजर सेट करा
+	                    return newDoc;
+	                });
 
-	        // -----------------------------------------
-	        // 2. Find existing document record
-	        // -----------------------------------------
-	        UserDocuments document =
-	                userDocumentRepository.findByUserId(userId)
-	                        .orElseThrow(() ->
-	                                new RuntimeException(
-	                                        "Document record not found for user: "
-	                                                + userId
-	                                ));
-
-
-	        // -----------------------------------------
 	        // 3. Normalize document type
-	        // -----------------------------------------
-	        String type = documentType
-	                .trim()
-	                .toUpperCase();
+	        String type = documentType.trim().toUpperCase();
 
-
-	        // -----------------------------------------
 	        // 4. Update selected document
-	        // -----------------------------------------
-
 	        switch (type) {
-
-	            // =====================================
-	            // DRIVING LICENSE
-	            // =====================================
 	            case "LICENSE":
-
-	                // Update file only if new file provided
-	                if (drivingLicense != null
-	                        && !drivingLicense.isEmpty()) {
-
-	                    String newLicenseFile =
-	                            saveFile(drivingLicense);
-
-	                    document.setDrivingLicense(
-	                            newLicenseFile
-	                    );
+	                if (drivingLicense != null && !drivingLicense.isEmpty()) {
+	                    document.setDrivingLicense(saveFile(drivingLicense));
 	                }
-
-
-	                // Update License number
-	                if (drivingLicenseNo != null
-	                        && !drivingLicenseNo.trim().isEmpty()) {
-
-	                    document.setDrivingLicenseNo(
-	                            drivingLicenseNo
-	                    );
+	                if (drivingLicenseNo != null && !drivingLicenseNo.trim().isEmpty()) {
+	                    document.setDrivingLicenseNo(drivingLicenseNo);
 	                }
-
-
-	                // Update expiry date
 	                if (licenseExpiry != null) {
-
-	                    document.setLicenseExpiry(
-	                            licenseExpiry
-	                    );
+	                    document.setLicenseExpiry(licenseExpiry);
 	                }
-
 	                break;
 
-
-	            // =====================================
-	            // AADHAAR
-	            // =====================================
 	            case "AADHAAR":
-
-	                // Update file only if new file provided
-	                if (aadhharCard != null
-	                        && !aadhharCard.isEmpty()) {
-
-	                    String newAadhaarFile =
-	                            saveFile(aadhharCard);
-
-	                    document.setAadhharCard(
-	                            newAadhaarFile
-	                    );
+	                if (aadhharCard != null && !aadhharCard.isEmpty()) {
+	                    document.setAadhharCard(saveFile(aadhharCard));
 	                }
-
-
-	                // Update Aadhaar number
-	                if (aadharCardNo != null
-	                        && !aadharCardNo.trim().isEmpty()) {
-
-	                    document.setAadharNo(
-	                            aadharCardNo
-	                    );
+	                if (aadharCardNo != null && !aadharCardNo.trim().isEmpty()) {
+	                    document.setAadharNo(aadharCardNo);
 	                }
-
 	                break;
 
-
-	            // =====================================
-	            // INVALID TYPE
-	            // =====================================
 	            default:
-
-	                throw new IllegalArgumentException(
-	                        "Invalid document type: "
-	                                + documentType
-	                );
+	                throw new IllegalArgumentException("Invalid document type: " + documentType);
 	        }
 
-
-	        // -----------------------------------------
 	        // 5. Update status
-	        // -----------------------------------------
 	        document.setStatus("Pending");
-
 	        document.setReason("");
 
-
-	        // -----------------------------------------
-	        // 6. Save existing row
-	        // -----------------------------------------
+	        // 6. Save (This will INSERT if new, UPDATE if existing)
 	        userDocumentRepository.save(document);
 
-
-	        // -----------------------------------------
 	        // 7. Return updated record
-	        // -----------------------------------------
 	        return userDocumentRepository.findByUser_Id(userId);
 
-
 	    } catch (Exception e) {
-
 	        e.printStackTrace();
-
-	        throw new RuntimeException(
-	                "Document update failed : "
-	                        + e.getMessage()
-	        );
+	        throw new RuntimeException("Document update failed : " + e.getMessage());
 	    }
 	}
 	
@@ -985,15 +1058,63 @@ public class UserServiceImpl implements UserService{
 	    userDocumentRepository.save(documents);
 	}
 
+//	@Override
+//	public BookingDto getTripDetailByCarIdAndUserIdService(int car_id, int user_id) {
+//		
+//		Booking bookedTripDetails = bookingRepository.findTripDetailsByCarIdAndUserId(car_id,user_id);
+//		
+//		return TripDetailsDto(bookedTripDetails.getAdminCarsData().getId(),bookedTripDetails.getUser().getId() ,bookedTripDetails.getDays(),bookedTripDetails.getPickupDate()
+//				, bookedTripDetails.getDropoffDate(),bookedTripDetails.getBookingStatus(),
+//				bookedTripDetails.getPickupLocation(),bookedTripDetails.getDropoffLocation()
+//				,bookedTripDetails.getTripDriverType(),bookedTripDetails.getTotal(),bookedTripDetails.getPrice());
+//	}
+//	@Override
+//	public BookingDto getTripDetailByCarIdAndUserIdService( int car_id,int user_id) {
+//	    
+//	    // Fetch using both IDs
+//	    Booking bookedTripDetails = bookingRepository.findTripDetailsByBookingIdAndCarId( car_id,user_id);
+//	    
+//	    if (bookedTripDetails == null) {
+//	        throw new RuntimeException("No trip details found for this Booking ID and Car ID");
+//	    }
+//	    
+//	    return TripDetailsDto(
+//	        bookedTripDetails.getAdminCarsData().getId(),
+//	        bookedTripDetails.getUser().getId(), 
+//	        bookedTripDetails.getDays(), 
+//	        bookedTripDetails.getPickupDate(),
+//	        bookedTripDetails.getDropoffDate(), 
+//	        bookedTripDetails.getBookingStatus(),
+//	        bookedTripDetails.getPickupLocation(), 
+//	        bookedTripDetails.getDropoffLocation(), 
+//	        bookedTripDetails.getTripDriverType(), 
+//	        bookedTripDetails.getTotal(), 
+//	        bookedTripDetails.getPrice()
+//	    );
+//	}
 	@Override
-	public BookingDto getTripDetailByCarIdAndUserIdService(int car_id, int user_id) {
-		
-		Booking bookedTripDetails = bookingRepository.findTripDetailsByCarIdAndUserId(car_id,user_id);
-		
-		return TripDetailsDto(bookedTripDetails.getAdminCarsData().getId(),bookedTripDetails.getUser().getId() ,bookedTripDetails.getDays(),bookedTripDetails.getPickupDate()
-				, bookedTripDetails.getDropoffDate(),bookedTripDetails.getBookingStatus(),
-				bookedTripDetails.getPickupLocation(),bookedTripDetails.getDropoffLocation()
-				,bookedTripDetails.getTripDriverType(),bookedTripDetails.getTotal(),bookedTripDetails.getPrice());
+	public BookingDto getTripDetailByBookingIdService(int booking_id) {
+	    
+	    // Fetch using the unique booking ID
+	    Booking bookedTripDetails = bookingRepository.findTripDetailsByBookingId(booking_id);
+	    
+	    if (bookedTripDetails == null) {
+	        throw new RuntimeException("No trip details found for this Booking ID");
+	    }
+	    
+	    return TripDetailsDto(
+	        bookedTripDetails.getAdminCarsData().getId(),
+	        bookedTripDetails.getUser().getId(), 
+	        bookedTripDetails.getDays(), 
+	        bookedTripDetails.getPickupDate(),
+	        bookedTripDetails.getDropoffDate(), 
+	        bookedTripDetails.getBookingStatus(),
+	        bookedTripDetails.getPickupLocation(), 
+	        bookedTripDetails.getDropoffLocation(), 
+	        bookedTripDetails.getTripDriverType(), 
+	        bookedTripDetails.getTotal(), 
+	        bookedTripDetails.getPrice()
+	    );
 	}
 
 	private BookingDto TripDetailsDto(int car_id,int user_id, int days, LocalDate pickupDate, LocalDate dropoffDate,

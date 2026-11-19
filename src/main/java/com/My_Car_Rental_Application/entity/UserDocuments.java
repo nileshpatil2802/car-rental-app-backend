@@ -16,7 +16,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
-public class UserDocuments {
+public class UserDocuments {  
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

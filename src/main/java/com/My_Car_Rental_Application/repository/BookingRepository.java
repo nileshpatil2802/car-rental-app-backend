@@ -68,8 +68,13 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 	// fetching remaining status
 	List<Booking> findByBookingStatusIn(List<String> bookingStatus);
 
-	@Query(value = "SELECT * FROM booking b " + "WHERE b.car_id = :car_id "
-			+ "AND b.user_id = :user_id", nativeQuery = true)
-	Booking findTripDetailsByCarIdAndUserId(@Param("car_id") int car_id, @Param("user_id") int user_id);
+//	@Query(value = "SELECT * FROM booking b " + "WHERE b.car_id = :car_id "
+//			+ "AND b.user_id = :user_id", nativeQuery = true)
+//	Booking findTripDetailsByCarIdAndUserId(@Param("car_id") int car_id, @Param("user_id") int user_id);
+	
+	@Query(value = "SELECT * FROM booking b WHERE b.id = :booking_id", nativeQuery = true)
+	Booking findTripDetailsByBookingId(@Param("booking_id") int booking_id);
+	
+	
 
 }

@@ -35,6 +35,7 @@ public class AdminController {
 
 	@PostMapping("/addCars")
 	public AdminCarsData addCars(@RequestBody CarsDataRequestDto adRequest ) {
+		System.out.println("I am in Add Cars Controller");
 		return adService.addCars(adRequest);
 	}
 	
